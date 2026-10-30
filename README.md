@@ -1,37 +1,93 @@
-# TalkPi - P2P Encrypted Voice & Messaging dApp for Pi Network
-Live Working MVP: https://6860979.xyz
+# @pios/media-sdk
 
-This project is licensed under the Pi Open Source (PiOS) License.
-PiOS License
+[![License: PiOS](https://img.shields.io/badge/License-PiOS-F1B82D.svg)](../LICENSE)
+[![Pi Network SDK](https://img.shields.io/badge/Pi%20SDK-2.0%20Ready-8A2BE2)](https://minepi.com)
+[![WebRTC Opus](https://img.shields.io/badge/Audio-Opus%20AEC%20%2F%20NS%20%2F%20AGC-00ADD8)](#webrtc-audio-tuning)
 
-Copyright (C) <year> <copyright holder>
+A unified **Pi SDK 2.0 Integration & Microphone/Camera Permissions Manager** designed for **Pi Network dApps** and **WebRTC Voice/Video Calling** apps.
 
-Permission is hereby granted by the application software developer (“Software Developer”), free
-of charge, to any person obtaining a copy of this application, software and associated 
-documentation files (the “Software”), which was developed by the Software Developer for use on 
-Pi Network, whereby the purpose of this license is to permit the development of derivative works 
-based on the Software, including the right to use, copy, modify, merge, publish, distribute, 
-sub-license, and/or sell copies of such derivative works and any Software components incorporated 
-therein, and to permit persons to whom such derivative works are furnished to do so, in each case, 
-solely to develop, use and market applications for the official Pi Network. For purposes of this 
-license, Pi Network shall mean any application, software, or other present or future platform 
-developed, owned or managed by Pi Community Company, and its parents, affiliates or subsidiaries, 
-for which the Software was developed, or on which the Software continues to operate.  However, 
-you are prohibited from using any portion of the Software or any derivative works thereof in any 
-manner (a) which infringes on any Pi Network intellectual property rights, (b) to hack any of Pi 
-Network’s systems or processes or (c) to develop any product or service which is competitive with 
-the Pi Network.
- 
-The above copyright notice and this permission notice shall be included in all copies or 
-substantial portions of the Software.
+---
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE 
-AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS, PUBLISHERS, OR COPYRIGHT HOLDERS OF THIS 
-SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL 
-DAMAGES (INCLUDING, BUT NOT LIMITED TO BUSINESS INTERRUPTION, LOSS OF USE, DATA OR PROFITS) 
-HOWEVER CAUSED AND UNDER ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR 
-TORT (INCLUDING NEGLIGENCE) ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE 
-OR OTHER DEALINGS IN THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+## 🎯 Key Capabilities
 
-Pi, Pi Network and the Pi logo are trademarks of the Pi Community Company.
+1. **Automatic Pi Browser Detection**:
+   - Accurately detects whether running inside the native **Pi Browser mobile WebView** (`/PiBrowser/i`, `__PI_BRIDGE__`, `window.Pi.native`) or in an external desktop browser.
+2. **Official Pi SDK 2.0 Authentication**:
+   - Biometric/OAuth login with requested scopes (`username`, `payments`, `wallet_address`).
+   - Graceful sandbox demo fallback when testing in desktop browsers outside Pi Browser.
+3. **WebRTC-Optimized Microphone Access**:
+   - Pre-configured acoustic constraints: Acoustic Echo Cancellation (AEC), Noise Suppression (NS), and Auto Gain Control (AGC) tuned for Opus 16–24 kbps low-bandwidth calls.
+4. **Camera Controls**:
+   - Front/rear camera toggle with `facingMode: 'user'` or `'environment'`.
+5. **Mobile Permission Diagnostics**:
+   - Pre-call diagnostics report and step-by-step guidance when a Pioneer denies microphone permissions in the mobile WebView.
+
+---
+
+## 📦 Installation & Usage
+
+### 1. Include in HTML
+```html
+<!-- Include official Pi SDK -->
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+
+<!-- Include PiMediaAndSdkManager -->
+<script src="pi-media-sdk.js"></script>
+```
+
+### 2. Initialize
+```javascript
+const piMedia = new PiMediaAndSdkManager({
+  sandbox: true, // Sandbox mode for external browsers
+  scopes: ['username', 'payments', 'wallet_address'],
+  onIncompletePaymentFound: (payment) => {
+    console.log('Recovering incomplete payment:', payment);
+  }
+});
+
+// Initialize Pi SDK
+await piMedia.initPiSdk();
+```
+
+### 3. Authenticate Pioneer
+```javascript
+const auth = await piMedia.authenticate();
+if (auth.success) {
+  console.log(`Authenticated as @${auth.user.username}`);
+  console.log(`Access Token: ${auth.accessToken}`);
+} else {
+  console.error(`Login error: ${auth.error}`);
+}
+```
+
+### 4. Check & Request Microphone for WebRTC Audio Call
+```javascript
+// Request high-quality echo-cancelled microphone stream
+const micResult = await piMedia.requestMicrophone();
+
+if (micResult.granted) {
+  const localStream = micResult.stream;
+  // Attach stream to WebRTC PeerConnection
+  localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+} else {
+  // Show user-friendly troubleshooting alert
+  alert(micResult.troubleshooting);
+}
+```
+
+### 5. Run Pre-Call Diagnostic Check
+```javascript
+const diag = await piMedia.runPreCallDiagnostics();
+console.log('Hardware and SDK status:', diag);
+// Returns: { environment, permissions, hardware, piAuth }
+```
+
+### 6. Clean Up Streams on Hangup
+```javascript
+piMedia.releaseMediaStreams();
+```
+
+---
+
+## 📄 License
+Licensed under the **Pi Open Source (PiOS) Software License**. Free for all developers building on the Pi Network ecosystem.
