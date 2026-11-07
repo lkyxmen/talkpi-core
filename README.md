@@ -1,93 +1,45 @@
-# @pios/media-sdk
+# TalkPi Core — E2EE WebRTC P2P & Anti-Phishing Security Modules
+[![Live MVP](https://img.shields.io/badge/Live_Working_MVP-6860979.xyz-brightgreen)](https://6860979.xyz)
+[![License: PiOS / MIT](https://img.shields.io/badge/License-PiOS_%2F_MIT-blue.svg)](LICENSE)
 
-[![License: PiOS](https://img.shields.io/badge/License-PiOS-F1B82D.svg)](../LICENSE)
-[![Pi Network SDK](https://img.shields.io/badge/Pi%20SDK-2.0%20Ready-8A2BE2)](https://minepi.com)
-[![WebRTC Opus](https://img.shields.io/badge/Audio-Opus%20AEC%20%2F%20NS%20%2F%20AGC-00ADD8)](#webrtc-audio-tuning)
+> **Live Working MVP (1-Click Demo Sandbox):** [https://6860979.xyz](https://6860979.xyz)
 
-A unified **Pi SDK 2.0 Integration & Microphone/Camera Permissions Manager** designed for **Pi Network dApps** and **WebRTC Voice/Video Calling** apps.
-
----
-
-## 🎯 Key Capabilities
-
-1. **Automatic Pi Browser Detection**:
-   - Accurately detects whether running inside the native **Pi Browser mobile WebView** (`/PiBrowser/i`, `__PI_BRIDGE__`, `window.Pi.native`) or in an external desktop browser.
-2. **Official Pi SDK 2.0 Authentication**:
-   - Biometric/OAuth login with requested scopes (`username`, `payments`, `wallet_address`).
-   - Graceful sandbox demo fallback when testing in desktop browsers outside Pi Browser.
-3. **WebRTC-Optimized Microphone Access**:
-   - Pre-configured acoustic constraints: Acoustic Echo Cancellation (AEC), Noise Suppression (NS), and Auto Gain Control (AGC) tuned for Opus 16–24 kbps low-bandwidth calls.
-4. **Camera Controls**:
-   - Front/rear camera toggle with `facingMode: 'user'` or `'environment'`.
-5. **Mobile Permission Diagnostics**:
-   - Pre-call diagnostics report and step-by-step guidance when a Pioneer denies microphone permissions in the mobile WebView.
+**TalkPi** is a next-generation End-to-End Encrypted (E2EE) Peer-to-Peer (P2P) voice calling and messaging dApp built natively for the Pi Network ecosystem and multi-chain Web3 environments. This repository (`talkpi-core`) contains the open-source client-side security, cryptographic verification, and WebRTC Dual-Stack IPv6 routing modules.
 
 ---
 
-## 📦 Installation & Usage
+## 🌟 Open-Source Modules Included in `talkpi-core`
+To protect production server infrastructure while contributing to Web3 Public Goods and the Pi Open Source (PiOS) initiative, we open-source our core client-side security and P2P modules:
 
-### 1. Include in HTML
-```html
-<!-- Include official Pi SDK -->
-<script src="https://sdk.minepi.com/pi-sdk.js"></script>
-
-<!-- Include PiMediaAndSdkManager -->
-<script src="pi-media-sdk.js"></script>
-```
-
-### 2. Initialize
-```javascript
-const piMedia = new PiMediaAndSdkManager({
-  sandbox: true, // Sandbox mode for external browsers
-  scopes: ['username', 'payments', 'wallet_address'],
-  onIncompletePaymentFound: (payment) => {
-    console.log('Recovering incomplete payment:', payment);
-  }
-});
-
-// Initialize Pi SDK
-await piMedia.initPiSdk();
-```
-
-### 3. Authenticate Pioneer
-```javascript
-const auth = await piMedia.authenticate();
-if (auth.success) {
-  console.log(`Authenticated as @${auth.user.username}`);
-  console.log(`Access Token: ${auth.accessToken}`);
-} else {
-  console.error(`Login error: ${auth.error}`);
-}
-```
-
-### 4. Check & Request Microphone for WebRTC Audio Call
-```javascript
-// Request high-quality echo-cancelled microphone stream
-const micResult = await piMedia.requestMicrophone();
-
-if (micResult.granted) {
-  const localStream = micResult.stream;
-  // Attach stream to WebRTC PeerConnection
-  localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-} else {
-  // Show user-friendly troubleshooting alert
-  alert(micResult.troubleshooting);
-}
-```
-
-### 5. Run Pre-Call Diagnostic Check
-```javascript
-const diag = await piMedia.runPreCallDiagnostics();
-console.log('Hardware and SDK status:', diag);
-// Returns: { environment, permissions, hardware, piAuth }
-```
-
-### 6. Clean Up Streams on Hangup
-```javascript
-piMedia.releaseMediaStreams();
-```
+1. **Deterministic 4-Word SAS Verification (`src/sas_verifier.js`)**
+   - Derives a 4-word Short Authentication String (SAS) from DTLS-SRTP session keys (`X25519` + `AES-256-GCM`) so both peers can visually verify zero Man-in-the-Middle (MITM) eavesdropping.
+2. **24-Word Seed Phrase Anti-Phishing Shield (`src/anti_phishing_guard.js`)**
+   - Client-side real-time regex and entropy scanner that detects and blocks attempts to solicit or leak 24-word wallet passphrases inside chat streams before transmission.
+3. **Dual-Stack IPv6 ICE Candidate Prioritizer (`src/webrtc_ipv6_router.js`)**
+   - Harvests and sorts WebRTC ICE candidates to prioritize native mobile 4G/5G Public IPv6 connections (>95% direct P2P bypass rate) before falling back to embedded `pion/turn` relays (UDP 3478).
+4. **Sender-Side Local FIFO Outbox (`src/local_fifo_outbox.js`)**
+   - Zero-server-storage offline message queue (`seq_id` -> `ACK`) storing AES-256-GCM encrypted payloads locally until P2P DataChannel reconnection.
 
 ---
 
-## 📄 License
-Licensed under the **Pi Open Source (PiOS) Software License**. Free for all developers building on the Pi Network ecosystem.
+## 💰 Tokenomics & 120% TVL SAFU Cold Reserve
+TalkPi enforces an economic anti-spam firewall via our Live Price Oracle:
+- **Mutual Friends:** 100% FREE voice calls, text, and voice notes forever.
+- **Two-Way Stranger Interactions ($0.001 Call Handshake / $0.005 Greeting):**
+  - `30%` Instant User Tip to Receiver | `30%` SAFU Cold Reserve | `20%` Server & TURN Infra | `20%` Core R&D.
+- **System Utility Fees (Vanity Usernames `@handle`, VIP Ad-Free Tiers & Ads):**
+  - `30%` Core R&D | `30%` Server & TURN Infra | `30%` SAFU Cold Reserve | `10%` Community Competition Pool.
+- **Dynamic 120% TVL Overflow Rule:** Whenever the SAFU Insurance Pool exceeds **120% of Total Internal User Balances**, 100% of excess funds automatically overflow into the Community Rewards Pool.
+
+---
+
+## 🗺️ 5-Phase Development Roadmap
+- **Phase 1 (Completed - Live at [6860979.xyz](https://6860979.xyz)):** Pi SDK Auth, Opus P2P Voice Calls, E2EE Text/Image/Voice Notes, Speech-to-Text, Live Price Oracle, `TPW...` Software Wallet (5% fee discount), TLP Rewards, and `@talkpi_echo_bot`.
+- **Phase 2 (In Progress):** Regional TURN routing, Web Companion App with dynamic QR Code pairing, and Zero-Knowledge personal cloud backup (Google Drive / OneDrive / WebDAV).
+- **Phase 3:** Multi-TURN clusters, 1:1 HD Video Calling, and customizable user profiles/status.
+- **Phase 4:** Standalone Native Mobile Apps (iOS CallKit / Android FCM VoIP Push) & Desktop Clients (Windows / macOS / Linux).
+- **Phase 5:** Trustless In-Chat P2P Escrow smart contracts for live video-inspected commerce.
+
+## 📜 Compliance & Legal
+- **Privacy Policy:** [https://6860979.xyz/privacy.html](https://6860979.xyz/privacy.html)
+- **Terms of Service:** [https://6860979.xyz/terms.html](https://6860979.xyz/terms.html)
